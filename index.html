@@ -26,7 +26,7 @@ h1{font-size:clamp(26px,5vw,40px);font-weight:900;letter-spacing:.12em;text-alig
 .qcard{
   display:block; text-decoration:none; color:inherit;
   background:var(--panel); border:1.5px solid var(--line); border-radius:16px;
-  padding:22px 22px 18px; position:relative; overflow:hidden;
+  padding:16px 20px 14px; position:relative; overflow:hidden;
   transition:transform .15s, box-shadow .15s, border-color .15s;
 }
 .qcard::before{
@@ -40,12 +40,14 @@ h1{font-size:clamp(26px,5vw,40px);font-weight:900;letter-spacing:.12em;text-alig
   outline:none;
 }
 .qcard:focus-visible{box-shadow:0 0 0 3px var(--ac)}
-.qcard .flag{font-size:34px;line-height:1}
-.qcard h2{font-size:19px;font-weight:900;margin-top:10px;letter-spacing:.04em}
-.qcard .en{font-size:11.5px;color:var(--ink-dim);letter-spacing:.12em;text-transform:uppercase;margin-top:3px}
-.qcard .desc{font-size:13px;color:#5a6474;margin-top:12px;line-height:1.65}
+.qcard .head{display:flex;align-items:center;gap:12px}
+img.flag{width:38px;height:38px;flex:0 0 auto;display:block}
+span.flag{font-size:30px;line-height:1;flex:0 0 auto}
+.qcard h2{font-size:19px;font-weight:900;letter-spacing:.04em}
+.qcard .en{font-size:11.5px;color:var(--ink-dim);letter-spacing:.12em;text-transform:uppercase;margin-top:2px}
+.qcard .desc{font-size:13px;color:#5a6474;margin-top:10px;line-height:1.65}
 .qcard .go{
-  margin-top:14px; font-size:13px; font-weight:700; color:var(--ac);
+  margin-top:10px; font-size:13px; font-weight:700; color:var(--ac);
 }
 footer{margin-top:auto;padding-top:48px;color:var(--ink-dim);font-size:12px;letter-spacing:.15em}
 </style>
@@ -75,16 +77,34 @@ const QUIZZES=[
    ac:"#3c3b6e", desc:"50 州地圖測驗，可加選華盛頓特區與 5 海外領地彩蛋關。"},
 ];
 const grid=document.getElementById("grid");
+/* Windows 不支援彩色國旗 emoji,改用 Twemoji SVG;載入失敗時退回原 emoji */
+function flagEl(emoji){
+  const cp=[...emoji].map(c=>c.codePointAt(0))
+    .filter(c=>c!==0xfe0f).map(c=>c.toString(16)).join("-");
+  const img=document.createElement("img");
+  img.className="flag"; img.alt=emoji; img.loading="lazy";
+  img.src=`https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/${cp}.svg`;
+  img.onerror=()=>{
+    const sp=document.createElement("span");
+    sp.className="flag"; sp.textContent=emoji;
+    img.replaceWith(sp);
+  };
+  return img;
+}
 QUIZZES.forEach(q=>{
   const a=document.createElement("a");
   a.className="qcard";
   a.href=q.file;
   a.style.setProperty("--ac",q.ac);
-  a.innerHTML=`<div class="flag">${q.flag}</div>
-    <h2>${q.title}</h2>
-    <div class="en">${q.en}</div>
-    <div class="desc">${q.desc}</div>
-    <div class="go">開始挑戰 →</div>`;
+  const head=document.createElement("div");
+  head.className="head";
+  head.appendChild(flagEl(q.flag));
+  const tt=document.createElement("div");
+  tt.innerHTML=`<h2>${q.title}</h2><div class="en">${q.en}</div>`;
+  head.appendChild(tt);
+  a.appendChild(head);
+  a.insertAdjacentHTML("beforeend",
+    `<div class="desc">${q.desc}</div><div class="go">開始挑戰 →</div>`);
   grid.appendChild(a);
 });
 </script>
