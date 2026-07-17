@@ -58,6 +58,11 @@ svg{width:100%;height:auto;display:block;cursor:pointer}
 /* 地圖高度不超過視窗：一般模式扣掉表頭，選擇題模式再扣掉選項區 */
 #map{max-height:calc(100vh - 100px)}
 #game.mc #map{max-height:calc(100vh - 220px);min-height:240px}
+/* 手機：不管縣市形狀，地圖區一律吃滿視窗剩餘高度（圖形自動上下置中，放大後可用整個高度） */
+@media (max-width:600px){
+  #map{height:calc(100vh - 92px);height:calc(100dvh - 92px);max-height:none}
+  #game.mc #map{height:calc(100vh - 212px);height:calc(100dvh - 212px);max-height:none;min-height:240px}
+}
 .dist{fill:#ccc9be;stroke:#fff;stroke-width:.8;transition:fill .1s;vector-effect:non-scaling-stroke}
 .dist:hover{fill:#aaa79e}
 .dist.review-dim{fill:#e5e4df !important}
