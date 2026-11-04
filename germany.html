@@ -236,6 +236,7 @@ svg text{pointer-events:none}
     <div id="mapwrap2" style="flex:1;position:relative;min-height:220px;border-radius:14px;overflow:hidden;border:1.5px solid var(--line);background:var(--panel)"></div>
     <div class="btnrow">
       <button class="bigbtn" id="againBtn" style="padding:11px 36px">再玩一次</button>
+      <button class="ghost" id="retryBtn">錯題重測</button>
       <button class="ghost" id="homeBtn">回主選單</button>
     </div>
   </div>
@@ -270,7 +271,6 @@ const DEPTS=[{"c":"BW","n":"巴登-符騰堡","f":"Baden-Württemberg","r":3,"d"
 
 const byC={}; DEPTS.forEach(o=>byC[o.c]=o);
 const mbc = o=> QC[o.c] || [(o.mb[0]+o.mb[2])/2,(o.mb[1]+o.mb[3])/2];
-const isOverseas = c=> !!BOXES[c];
 
 /* ---------- svg build ---------- */
 const svgNS="http://www.w3.org/2000/svg";
@@ -304,17 +304,6 @@ function buildMap(svgTarget){
   return {g,paths};
 }
 const main=buildMap(mapEl);
-let terrOn=true;
-function setTerr(on,M){
-  M=M||main;
-  DEPTS.filter(o=>o.r===4).forEach(o=>M.paths[o.c].style.display=on?"":"none");
-  M.g.querySelectorAll(".sep").forEach(L=>L.style.display=on?"":"none");
-  if(M===main){
-    terrOn=on;
-    const tb=document.querySelector('#regions [data-r="4"]');
-    if(tb) tb.style.display=on?"":"none";
-  }
-}
 
 function applyVB(){
   mapEl.setAttribute("viewBox",`${vb.x} ${vb.y} ${vb.w} ${vb.h}`);
@@ -359,6 +348,17 @@ function fitBBox(b,padFrac){
   clampVB(); applyVB();
 }
 function fitAll(){ fitBBox([0,0,MAP_W,MAP_H],0.01); }
+/* 提示：以目標為中心放大；小地區多留周邊，但畫面至少保留地圖寬度的 12% 當背景 */
+function hintFit(b){
+  const rel=Math.hypot(b[2]-b[0],b[3]-b[1])/Math.hypot(MAP_W,MAP_H);
+  fitBBox(b, rel<0.06?1.8:rel<0.15?1.0:0.5);
+  const minW=MAP_W*0.12;
+  if(vb.w<minW){
+    const cx=vb.x+vb.w/2, cy=vb.y+vb.h/2;
+    vb.w=minW; vb.h=minW*MAP_H/MAP_W; vb.x=cx-vb.w/2; vb.y=cy-vb.h/2;
+    clampVB(); applyVB();
+  }
+}
 function unionMB(cs){
   let b=[1e9,1e9,-1e9,-1e9];
   cs.forEach(c=>{const o=byC[c];
@@ -577,7 +577,7 @@ window.addEventListener("resize",updateLabelScale);
 $("labelbtn").onclick=()=>setLabels(!labelsOn);
 
 /* ---------- flow ---------- */
-function startGame(){
+function startGame(subset){
   $("start").style.display="none";
   $("result").style.display="none";
   $("game").style.display="flex";
@@ -589,17 +589,19 @@ function startGame(){
   session++; disarmQuit();
   results={}; idx=0;
   if(mode==="review"){ setupReview(); return; }
-  const p=poolFor(range);
-  pool=shuffle(p.slice());
-  if(countSel>0) pool=pool.slice(0,Math.min(countSel,pool.length));
+  if(subset){ pool=shuffle(subset.slice()); }
+  else{
+    pool=shuffle(poolFor(range).slice());
+    if(countSel>0) pool=pool.slice(0,Math.min(countSel,pool.length));
+  }
   ctxBB = (range==="16") ? null : unionMB(poolFor(range).map(o=>o.c));
   $("hintbtn").style.display=mode==="click"?"":"none";
   $("choices").style.display=mode==="mc"?"grid":"none";
   if(ctxBB&&mode==="click") fitBBox(ctxBB,0.12);
   nextQuestion();
 }
-$("startBtn").onclick=startGame;
-$("againBtn").onclick=startGame;
+$("startBtn").onclick=()=>startGame();
+$("againBtn").onclick=()=>startGame();
 function goHome(){
   session++; disarmQuit();
   $("result").style.display="none";$("game").style.display="none";$("start").style.display="flex";
@@ -690,8 +692,7 @@ $("hintbtn").onclick=()=>{
   if(mode!=="click"||locked)return;
   usedHint=true;$("hintbtn").disabled=true;
   const t=pool[idx];
-  const rel=Math.hypot(t.mb[2]-t.mb[0],t.mb[3]-t.mb[1])/Math.hypot(MAP_W,MAP_H);
-  fitBBox(t.mb, rel<0.06?1.8:rel<0.15?1.0:0.5);
+  hintFit(t.mb);
   setDeptClass(t.c,"target");
   toast("看到閃爍的位置了嗎？（用提示最高只算黃燈）","info",2200);
   later(()=>main.paths[t.c].classList.remove("target"),2600);
@@ -796,6 +797,8 @@ function showResult(){
     <span style="color:#b8860b">兩次內 ${y}</span>
     <span style="color:#c0392b">未答對 ${r}</span>`;
   const wrong=pool.filter(o=>results[o.c]!=="g");
+  $("retryBtn").style.display=wrong.length?"":"none";
+  $("retryBtn").onclick=()=>startGame(wrong);
   $("mistakes").innerHTML=wrong.length
     ?"需要複習："+wrong.map(o=>`<b>${o.n}</b>`).join("、")
     :"全部一次答對，太厲害了！🇩🇪";
