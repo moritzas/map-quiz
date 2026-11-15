@@ -53,6 +53,8 @@ body{font-family:system-ui,-apple-system,"Microsoft JhengHei","Noto Sans TC",san
 }
 
 /* ───── 地圖 ───── */
+.inset-frame{fill:#f6f8fb;stroke:#c3ccd8;stroke-width:1;stroke-dasharray:4 3;vector-effect:non-scaling-stroke;pointer-events:none}
+.inset-note{font-size:7.5px;fill:#8a94a3;text-anchor:middle;pointer-events:none}
 #map-wrap{position:relative;background:#fff;border-radius:14px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.08)}
 svg{width:100%;height:auto;display:block;cursor:pointer}
 /* 地圖區一律吃滿視窗剩餘高度（電腦、大螢幕、手機皆同；圖形自動置中） */
@@ -306,12 +308,21 @@ function selectCounty(name){
   if(inReview||mode==='review') enterReview(); else startQuiz();
 }
 
+/* ── 遠方離島內嵌框：主圖只依其餘鄉鎮縮放，該島另畫在角落的框裡
+   box=[x0,y0,x1,y1]（viewBox 座標，寬固定 500）；y0 往下錯開，避開左上角的計分小卡 */
+const INSETS={
+  '金門縣':{town:'烏坵鄉',box:[8,46,126,138],note:'↗ 東北方約 120 公里'}
+};
+
 /* ── 建地圖 ── */
 function buildMap(name){
   const d=DATA[name];
   const topo={type:'Topology',transform:d.t,arcs:d.a,objects:{towns:{type:'GeometryCollection',
     geometries:d.g.map(g=>({type:g.type,arcs:g.arcs,properties:{name:g.properties.n}}))}}};
   const features=topojson.feature(topo,topo.objects.towns).features;
+  const ins=INSETS[name];
+  let insetF=null;
+  if(ins){const i=features.findIndex(f=>f.properties.name===ins.town); if(i>=0) insetF=features.splice(i,1)[0];}
   const proj0=d3.geoMercator().fitSize([500,500],{type:'FeatureCollection',features});
   const pg0=d3.geoPath().projection(proj0);
   let minY=Infinity,maxY=-Infinity;
@@ -326,7 +337,20 @@ function buildMap(name){
   g.id='map-g'; svgEl.appendChild(g);
 
   pathEls={};centroids={};bboxes={};labelGroups=[];labelMode=null;
-  features.forEach(f=>{
+  const items=features.map(f=>({f,pg:pathGen}));
+  if(insetF){
+    const [x0,y0,x1,y1]=ins.box, NS='http://www.w3.org/2000/svg';
+    const fr=document.createElementNS(NS,'rect');
+    fr.setAttribute('class','inset-frame');
+    fr.setAttribute('x',x0);fr.setAttribute('y',y0);fr.setAttribute('width',x1-x0);fr.setAttribute('height',y1-y0);fr.setAttribute('rx',6);
+    g.appendChild(fr);
+    const nt=document.createElementNS(NS,'text');
+    nt.setAttribute('class','inset-note');nt.setAttribute('x',(x0+x1)/2);nt.setAttribute('y',y1-6);
+    nt.textContent=ins.note; g.appendChild(nt);
+    const ip=d3.geoMercator().fitExtent([[x0+14,y0+12],[x1-14,y1-22]],insetF);
+    items.push({f:insetF,pg:d3.geoPath().projection(ip)});
+  }
+  items.forEach(({f,pg:pathGen})=>{
     const dname=f.properties.name;
     const el=document.createElementNS('http://www.w3.org/2000/svg','path');
     el.setAttribute('class','dist'); el.setAttribute('d',pathGen(f));
