@@ -157,6 +157,16 @@ svg text{pointer-events:none}
 .btnrow{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
 .ghost{padding:10px 24px;border-radius:999px;border:1.5px solid #bbb;background:transparent;color:var(--ink);font-weight:700;font-size:15px;cursor:pointer;font-family:inherit}
 .ghost:hover{border-color:var(--accent);color:var(--accent)}
+/* 電腦版：答題統計與按鈕浮在地圖左上角 */
+@media (min-width:760px){
+  #game{position:relative}
+  #topbar{position:absolute;top:12px;left:13px;z-index:6;flex-direction:column;align-items:stretch;gap:8px;
+    padding:10px 12px;background:rgba(255,255,255,.95);border:1.5px solid var(--line);border-radius:14px;box-shadow:0 4px 18px rgba(30,40,60,.12);max-width:300px}
+  #stats{flex:none;border:none;background:none;padding:0 2px;flex-direction:column;align-items:flex-start;gap:5px;white-space:normal}
+  #stats .line1{font-size:clamp(15px,.6vw + 7px,20px)}
+  #stats .line2{font-size:clamp(14px,.5vw + 6px,18px)}
+  #btncol button{flex:1}
+}
 @media (max-width:560px){
   #app{padding:8px}
   #regions{max-width:70%}
@@ -258,7 +268,7 @@ const BLINES=[[480.5, 0, 480.5, 392.2], [0, 392.2, 480.5, 392.2]];
 const REGION=["北海道・東北","関東","中部","近畿","中国・四国","九州・沖縄"];
 const byC={}; PREFS.forEach(o=>byC[o.c]=o);
 /* 特別小的地區：加一圈看不見的觸控範圍（螢幕上約 HALO_PX 像素寬） */
-const HALO=[13, 27, 47], HALO_PX=6;
+const HALO=[13, 27, 47], HALO_PX=6, HALO_INNER_PX=2.5;
 const QC={47:[126, 1014]}; // 沖縄畫在內嵌框，誘答距離改用九州南方的邏輯座標
 const mbc = o=> QC[o.c] || [(o.mb[0]+o.mb[2])/2,(o.mb[1]+o.mb[3])/2];
 
@@ -298,6 +308,10 @@ function applyVB(){
 function placeEdgeUp(){
   const up=document.querySelector('#edgepan [data-dir="up"]'); if(!up) return;
   const r=cardReserve(); up.style.top=(r>0?Math.round(r-2):8)+"px";
+  /* 電腦版：「顯示地名」鈕放在左上角面板下方 */
+  const lb=$("labelbtn"), m=mapEl.getBoundingClientRect();
+  if(m.height&&hudFloating()) lb.style.top=Math.round($("topbar").getBoundingClientRect().bottom-m.top+8)+"px";
+  else lb.style.top="";
 }
 function updateHalo(){
   const s=screenScale(); if(!isFinite(s)||s<=0) return;
@@ -334,16 +348,33 @@ function cardReserve(){
   if(!m.height||pr.hidden||!pr.offsetParent) return 0;
   return pr.getBoundingClientRect().bottom-m.top+8;
 }
+function hudFloating(){ return getComputedStyle($("topbar")).position==="absolute"; }
 function screenYOf(y){
   const r=mapEl.getBoundingClientRect(), s=screenScale();
   return (r.height-vb.h*s)/2+(y-vb.y)*s;
 }
+function screenXOf(x){
+  const r=mapEl.getBoundingClientRect(), s=screenScale();
+  return (r.width-vb.w*s)/2+(x-vb.x)*s;
+}
+/* 浮在地圖上方的元件（題目卡、電腦版左上角面板）：若和 b 的左右範圍重疊，b 的上緣要讓到它們下面 */
+function overlayReserve(b){
+  const m=mapEl.getBoundingClientRect(); if(!m.height) return 0;
+  const xa=screenXOf(b[0]), xb=screenXOf(b[2]); let need=0;
+  [$("prompt"), hudFloating()?$("topbar"):null].forEach(el=>{
+    if(!el||el.hidden||!el.offsetParent) return;
+    const r=el.getBoundingClientRect();
+    if(r.right-m.left<xa||r.left-m.left>xb) return;
+    need=Math.max(need,r.bottom-m.top+8);
+  });
+  return need;
+}
 /* 把 b 放進畫面，並確保 b 的上緣不被題目卡擋住 */
 function fitBBox(b,padFrac,absPad){
   fitCore(b,padFrac,absPad);
-  const need=cardReserve(); if(need<=0) return;
   let ext=0;
   for(let i=0;i<6;i++){
+    const need=overlayReserve(b); if(need<=0) break;
     const y=screenYOf(b[1]); if(y>=need-0.5) break;
     ext+=(need-y)/screenScale()+0.5;
     fitCore([b[0],b[1]-ext,b[2],b[3]],padFrac,absPad);
@@ -426,9 +457,20 @@ mapEl.addEventListener("pointerup",e=>{
   const tgt=downTarget;
   const wasTap=movedDist<7&&ptrs.size===1;
   endPtr(e);
-  if(wasTap&&tgt&&tgt.dataset&&tgt.dataset.c) handlePrefTap(parseInt(tgt.dataset.c));
+  if(wasTap&&tgt&&tgt.dataset&&tgt.dataset.c) handlePrefTap(parseInt(resolveTap(tgt,e.clientX,e.clientY)));
 });
 mapEl.addEventListener("pointercancel",endPtr);
+/* 點到小地區的外擴觸控圈時：底下若是另一個地區的陸地，以底下的為準；只有非常貼近小地區時才算小地區 */
+function resolveTap(tgt,cx,cy){
+  if(!tgt.classList.contains("halo-hit")) return tgt.dataset.c;
+  const under=document.elementsFromPoint(cx,cy).find(n=>n!==tgt&&n.dataset&&n.dataset.c&&!n.classList.contains("halo-hit")&&mapEl.contains(n));
+  if(!under||under.dataset.c===tgt.dataset.c) return tgt.dataset.c;
+  const [x,y]=clientToSvg(cx,cy), s=screenScale(), old=tgt.getAttribute("stroke-width");
+  tgt.setAttribute("stroke-width",(2*HALO_INNER_PX/s).toFixed(3));
+  let near=false; try{ near=tgt.isPointInStroke(new DOMPoint(x,y)); }catch(_){}
+  tgt.setAttribute("stroke-width",old);
+  return near?tgt.dataset.c:under.dataset.c;
+}
 mapEl.addEventListener("wheel",e=>{
   e.preventDefault();
   zoomAt(e.clientX,e.clientY,e.deltaY<0?1.22:1/1.22);
