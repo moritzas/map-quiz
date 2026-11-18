@@ -35,18 +35,25 @@ body{font-family:system-ui,-apple-system,"Microsoft JhengHei","Noto Sans TC",san
   width:112px;color:transparent;box-shadow:0 1px 3px rgba(0,0,0,.06)}
 #gameSel option,#gameSel optgroup{color:#1a1a18}
 #gameSelLabel{position:absolute;left:11px;top:50%;transform:translateY(-50%);font-size:14px;font-weight:600;color:#1a1a18;pointer-events:none;white-space:nowrap}
-#prompt{flex:1;min-width:0;display:flex;align-items:center;gap:9px;
-  background:linear-gradient(135deg,#1a6abf 0%,#185FA5 100%);border-radius:11px;padding:8px 13px;
-  box-shadow:0 2px 8px rgba(24,95,165,.22);min-height:41px}
-#prompt-label{font-size:12px;color:rgba(255,255,255,.65);white-space:nowrap}
-#target{font-size:19px;font-weight:700;color:#fff;letter-spacing:.02em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#gamebar .spacer{flex:1}
+/* 題目卡：浮在地圖上緣中間 */
+#topstack{position:absolute;top:10px;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:8px;
+  z-index:15;pointer-events:none;width:max-content;max-width:calc(100% - 24px)}
+#prompt{pointer-events:auto;background:rgba(255,255,255,.96);border:1.5px solid #dcdad5;border-radius:16px;
+  padding:clamp(7px,.8vh,12px) clamp(16px,1.6vw,28px);box-shadow:0 4px 18px rgba(30,40,60,.13);
+  display:flex;align-items:baseline;justify-content:center;gap:clamp(6px,.6vw,10px);text-align:center;min-width:150px;max-width:100%}
+#prompt[hidden]{display:none}
+#prompt-label{font-size:clamp(12px,.6vw + .5vh,16px);color:#888;font-weight:700;letter-spacing:.1em;white-space:nowrap}
+#target{font-size:clamp(22px,1.6vw + 1.6vh + 4px,42px);font-weight:900;color:#185FA5;letter-spacing:.06em;line-height:1.15;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#prompt.mc #prompt-label{font-size:clamp(16px,1vw + 1vh + 2px,28px);font-weight:900;color:#1a1a18;letter-spacing:.05em}
+#prompt.mc #target{display:none}
+#target:empty::before{content:"\00a0"}
 .hbtn{padding:9px 12px;border-radius:10px;border:1px solid #ccc;background:#fff;color:#333;font-size:13px;font-weight:600;
   cursor:pointer;font-family:inherit;white-space:nowrap;flex-shrink:0;box-shadow:0 1px 3px rgba(0,0,0,.06);transition:.15s}
 .hbtn:hover{background:#f7f6f3}
 .hbtn:disabled{opacity:.35;cursor:default}
 #btnQuit.arm{border-color:#c0392b;color:#c0392b;background:#fdedec}
 @media (max-width:430px){
-  #prompt-label{display:none}
   #gameSel{width:96px;font-size:13px}
   #gameSelLabel{font-size:13px}
   #btnHint{padding:9px 9px}
@@ -93,10 +100,25 @@ svg{width:100%;height:auto;display:block;cursor:pointer}
 #zoom-controls{position:absolute;bottom:10px;right:10px;display:none;flex-direction:column;gap:4px;z-index:20}
 .zoom-btn{width:32px;height:32px;border-radius:8px;border:1px solid #ccc;background:rgba(255,255,255,.92);box-shadow:0 1px 4px rgba(0,0,0,.12);cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;color:#333;line-height:1}
 .zoom-btn:hover{background:#fff}
-#toast{position:fixed;top:70px;left:50%;transform:translateX(-50%) translateY(-8px);background:rgba(255,255,255,.97);
+#toast{transform:translateY(-8px);background:rgba(255,255,255,.97);
   border:1.5px solid #ddd;border-radius:999px;padding:7px 18px;font-weight:700;font-size:14px;
-  opacity:0;transition:.25s;pointer-events:none;white-space:nowrap;z-index:150;box-shadow:0 2px 10px rgba(0,0,0,.1);max-width:92vw;overflow:hidden;text-overflow:ellipsis}
-#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+  opacity:0;transition:.25s;pointer-events:none;z-index:150;box-shadow:0 2px 10px rgba(0,0,0,.1);max-width:100%;text-align:center}
+#toast.show{opacity:1;transform:translateY(0)}
+/* 電腦版：縣市選單與按鈕浮在地圖左上角；統計小卡固定在左下角 */
+@media (min-width:760px){
+  #map-wrap #gamebar{position:absolute;top:12px;left:12px;z-index:25;flex-direction:column;align-items:stretch;gap:8px;padding:10px 12px;
+    background:rgba(255,255,255,.95);border:1.5px solid #dcdad5;border-radius:14px;box-shadow:0 4px 18px rgba(30,40,60,.12)}
+  #map-wrap #gamebar .spacer{display:none}
+  #map-wrap #gamebar #gameSel{width:100%}
+  #map-wrap #gamebar .hbtn{font-size:14px}
+  #map-wrap #gamebar .btnrow{display:flex;gap:6px}
+  #map-wrap #gamebar .btnrow .hbtn{flex:1}
+  #game:not(.mc) #map-wrap #map{height:calc(100vh - 30px);height:calc(100dvh - 30px)}
+  #game.mc #map-wrap #map{height:calc(100vh - 150px);height:calc(100dvh - 150px)}
+  #app{padding-top:14px}
+}
+#gamebar .btnrow{display:flex;gap:7px}
+#gamebar #btnReview{position:static;padding:9px 12px;border-radius:10px;font-size:13px;white-space:nowrap;flex-shrink:0}
 #toast.ok{color:#1e8449}#toast.no{color:#c0392b}#toast.info{color:#185FA5}
 
 /* ───── 選擇題 ───── */
@@ -162,12 +184,12 @@ svg{width:100%;height:auto;display:block;cursor:pointer}
   <div id="game">
     <div id="gamebar">
       <div id="selwrap"><select id="gameSel"></select><span id="gameSelLabel"></span></div>
-      <div id="prompt">
-        <span id="prompt-label">請點選</span>
-        <span id="target"></span>
+      <span class="spacer"></span>
+      <div class="btnrow">
+        <button class="hbtn" id="btnHint">💡 提示</button>
+        <button id="btnReview">🗺 複習</button>
+        <button class="hbtn" id="btnQuit">✕</button>
       </div>
-      <button class="hbtn" id="btnHint">💡 提示</button>
-      <button class="hbtn" id="btnQuit">✕</button>
     </div>
 
     <div id="result-panel">
@@ -184,14 +206,19 @@ svg{width:100%;height:auto;display:block;cursor:pointer}
 
     <div id="map-wrap">
       <svg id="map" viewBox="0 0 500 500"></svg>
+      <div id="topstack">
+        <div id="prompt">
+          <span id="prompt-label">請點選</span>
+          <span id="target"></span>
+        </div>
+        <div id="toast"></div>
+      </div>
       <div id="map-stats"></div>
-      <button id="btnReview">🗺 複習</button>
       <div id="zoom-controls">
         <button class="zoom-btn" id="btnZin" title="放大">＋</button>
         <button class="zoom-btn" id="btnZout" title="縮小">－</button>
         <button class="zoom-btn" id="btnZreset" title="重置" style="font-size:13px">⊙</button>
       </div>
-      <div id="toast"></div>
     </div>
 
     <div id="choices"></div>
@@ -388,35 +415,80 @@ function buildMap(name){
     }catch(e){}
   });
 
-  const zoom=d3.zoom().scaleExtent([1,12]).on('zoom',e=>{
+  const zoom=d3.zoom().scaleExtent([0.5,12]).on('zoom',e=>{
     g.setAttribute('transform',e.transform.toString());
     currentK=e.transform.k;
     updateLabelScale();
   });
   d3.select(svgEl).call(zoom);
   d3.select(svgEl).on('dblclick.zoom',()=>{
-    d3.select(svgEl).transition().duration(400).call(zoom.transform,d3.zoomIdentity);
+    d3.select(svgEl).transition().duration(400).call(zoom.transform,homeT());
   });
   svgEl._zoom=zoom;
   d3.select(svgEl).call(zoom.transform,d3.zoomIdentity);
   currentK=1;
 
   positionStats();
+  d3.select(svgEl).call(zoom.transform,homeT());
   $('zoom-controls').style.display='flex';
 }
 
-/* 統計小卡放在點最少的角落（右上留給複習鈕、右下留給縮放鈕 → 只考慮左上/左下） */
+/* 統計小卡固定在左下角（上緣中間是題目卡、右下是縮放鈕） */
 function positionStats(){
   const st=$('map-stats');
-  let top=0,bottom=0;const hh=svgH/2;
-  Object.values(centroids).forEach(([,cy])=>{cy<hh?top++:bottom++;});
-  st.style.top='';st.style.bottom='';st.style.left='0';
-  if(top<=bottom)st.style.top='0';else st.style.bottom='0';
+  st.style.top='';st.style.left='0';st.style.bottom='0';
 }
 
 /* ── 縮放 ── */
 function zoomBy(f){const s=$('map');if(!s._zoom)return;d3.select(s).transition().duration(250).call(s._zoom.scaleBy,f);}
-function zoomReset(){const s=$('map');if(!s._zoom)return;d3.select(s).transition().duration(300).call(s._zoom.transform,d3.zoomIdentity);}
+function zoomReset(){const s=$('map');if(!s._zoom)return;d3.select(s).transition().duration(300).call(s._zoom.transform,homeT());}
+/* 浮在地圖上的元件（題目卡、電腦版左上角面板）不可蓋住地圖：
+   在原始比例下檢查它們底下有沒有鄉鎮；有的話把整張圖縮小並往下移，讓地圖上緣退到元件下方 */
+function hudFloating(){ return !!$('gamebar').closest('#map-wrap'); }
+function coversLand(r){
+  for(let y=r.top+3;y<r.bottom;y+=8) for(let x=r.left+3;x<r.right;x+=8)
+    for(const n of document.elementsFromPoint(x,y)) if(n.classList&&n.classList.contains('dist')) return true;
+  return false;
+}
+function homeT(){
+  const s=$('map'), g=$('map-g'); if(!g||!s._zoom) return d3.zoomIdentity;
+  const keep=g.getAttribute('transform'); g.removeAttribute('transform');
+  let needT=0, needB=Infinity;
+  [$('prompt'), hudFloating()?$('gamebar'):null].forEach(el=>{
+    if(!el||el.hidden||!el.offsetParent) return;
+    const r=el.getBoundingClientRect(); if(coversLand(r)) needT=Math.max(needT,r.bottom+8);
+  });
+  const st=$('map-stats');
+  if(st.offsetParent&&getComputedStyle(st).display!=='none'){
+    const q=[...st.children].map(c=>c.getBoundingClientRect()).filter(r=>r.width);
+    if(q.length){ const r={left:Math.min(...q.map(a=>a.left)),right:Math.max(...q.map(a=>a.right)),top:Math.min(...q.map(a=>a.top)),bottom:Math.max(...q.map(a=>a.bottom))};
+      if(coversLand(r)) needB=r.top-6; }
+  }
+  let t=d3.zoomIdentity;
+  if(needT>0||needB<Infinity){
+    const M=g.getScreenCTM(), bb=g.getBBox();
+    const y0=bb.y, y1=bb.y+bb.height, cx=bb.x+bb.width/2;
+    const ny=needT>0?(needT-M.f)/M.d:y0, nb=needB<Infinity?(needB-M.f)/M.d:y1;
+    const top=Math.max(ny,y0), bot=Math.min(nb,y1);
+    if(top>y0||bot<y1){
+      const k=Math.max(0.5,Math.min(1,(bot-top)/(y1-y0)));
+      const ty=top+((bot-top)-k*(y1-y0))/2-k*y0;
+      t=d3.zoomIdentity.translate(cx*(1-k),ty).scale(k);
+    }
+  }
+  if(keep) g.setAttribute('transform',keep);
+  return t;
+}
+/* 電腦版把縣市選單與按鈕搬進地圖左上角；手機版放回地圖上方 */
+const deskMQ=window.matchMedia('(min-width:760px)');
+function placeBar(){
+  const bar=$('gamebar'), wrap=$('map-wrap');
+  if(deskMQ.matches){ if(bar.parentNode!==wrap) wrap.insertBefore(bar,wrap.firstChild); }
+  else if(bar.parentNode===wrap) $('game').insertBefore(bar,$('game').firstChild);
+  if(currentCounty) positionStats();
+}
+deskMQ.addEventListener('change',()=>{placeBar(); if(currentCounty) zoomReset();});
+placeBar();
 $('btnZin').onclick=()=>zoomBy(1.5);
 $('btnZout').onclick=()=>zoomBy(1/1.5);
 $('btnZreset').onclick=zoomReset;
@@ -486,6 +558,8 @@ function startQuiz(subset){
   $('result-panel').style.display='none';
   $('map-stats').style.display='flex';
   const m=quizMode();
+  $('prompt').hidden=false;
+  $('prompt').classList.toggle('mc',m==='mc');
   $('prompt-label').textContent=m==='click'?'請點選':'閃爍的是？';
   $('btnHint').style.display=m==='click'?'':'none';
   $('choices').style.display=m==='mc'?'grid':'none';
@@ -694,6 +768,7 @@ function enterReview(){
   $('choices').style.display='none';
   $('result-panel').style.display='none';
   $('btnHint').style.display='none';
+  $('prompt').hidden=true;
   $('prompt-label').textContent='';
   $('target').textContent='複習模式';
   Object.values(pathEls).forEach(el=>el.setAttribute('class','dist review-dim'));

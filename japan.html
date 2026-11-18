@@ -134,7 +134,7 @@ svg text{pointer-events:none}
 #choices button.c-no{border-color:var(--accent);background:#fdedec;color:#c0392b;opacity:.75}
 #choices button:disabled{cursor:default}
 
-#infocard{position:absolute;left:50%;bottom:52px;transform:translateX(-50%);background:rgba(255,255,255,.97);
+#infocard{pointer-events:none;position:absolute;left:50%;bottom:52px;transform:translateX(-50%);background:rgba(255,255,255,.97);
   border:1.5px solid var(--line);border-radius:12px;padding:11px 20px;text-align:center;display:none;z-index:4;min-width:190px;box-shadow:0 3px 14px rgba(0,0,0,.12)}
 #infocard .name{font-size:18px;font-weight:900;margin-bottom:2px}
 #infocard .fr{font-size:12.5px;color:var(--ink-dim);font-style:italic;margin-bottom:6px}
@@ -276,7 +276,7 @@ const mbc = o=> QC[o.c] || [(o.mb[0]+o.mb[2])/2,(o.mb[1]+o.mb[3])/2];
 const svgNS="http://www.w3.org/2000/svg";
 const mapEl=document.getElementById("map");
 let vb={x:0,y:0,w:MAP_W,h:MAP_H};
-const MINW=MAP_W/50, MAXW=MAP_W*1.12;
+const MINW=MAP_W/50, MAXW=MAP_W*1.3;
 
 function el(tag,attrs,parent){
   const n=document.createElementNS(svgNS,tag);
@@ -357,27 +357,47 @@ function screenXOf(x){
   const r=mapEl.getBoundingClientRect(), s=screenScale();
   return (r.width-vb.w*s)/2+(x-vb.x)*s;
 }
-/* 浮在地圖上方的元件（題目卡、電腦版左上角面板）：若和 b 的左右範圍重疊，b 的上緣要讓到它們下面 */
-function overlayReserve(b){
-  const m=mapEl.getBoundingClientRect(); if(!m.height) return 0;
-  const xa=screenXOf(b[0]), xb=screenXOf(b[2]); let need=0;
+/* 元件底下有沒有地圖上的陸地或離島框（每 8px 取樣） */
+function coversLand(r){
+  for(let y=r.top+3;y<r.bottom;y+=8) for(let x=r.left+3;x<r.right;x+=8)
+    for(const n of document.elementsFromPoint(x,y)){
+      if(n===mapEl||!mapEl.contains(n)||n.classList.contains("halo-hit")) continue;
+      if(n.closest("[data-c],[data-id]")) return true;
+    }
+  return false;
+}
+/* 浮在地圖上方的元件（題目卡、電腦版左上角面板）蓋到地圖時，地圖要讓到它們下面 */
+function overlayReserve(){
+  const m=mapEl.getBoundingClientRect(); if(!m.height) return 0; let need=0;
   [$("prompt"), hudFloating()?$("topbar"):null].forEach(el=>{
     if(!el||el.hidden||!el.offsetParent) return;
     const r=el.getBoundingClientRect();
-    if(r.right-m.left<xa||r.left-m.left>xb) return;
-    need=Math.max(need,r.bottom-m.top+8);
+    if(coversLand(r)) need=Math.max(need,r.bottom-m.top+8);
   });
   return need;
+}
+/* 底部分區按鈕列蓋到地圖時，地圖要往上讓 */
+function bottomReserve(){
+  const reg=$("regions"), m=mapEl.getBoundingClientRect(); if(!reg||!reg.offsetParent||!m.height) return 0;
+  let r=null;
+  [...reg.children].forEach(c=>{ const q=c.getBoundingClientRect(); if(!q.width) return;
+    r=r?{left:Math.min(r.left,q.left),top:Math.min(r.top,q.top),right:Math.max(r.right,q.right),bottom:Math.max(r.bottom,q.bottom)}:{left:q.left,top:q.top,right:q.right,bottom:q.bottom}; });
+  if(!r||!coversLand(r)) return 0;
+  return m.bottom-r.top+6;
 }
 /* 把 b 放進畫面，並確保 b 的上緣不被題目卡擋住 */
 function fitBBox(b,padFrac,absPad){
   fitCore(b,padFrac,absPad);
-  let ext=0;
+  let extT=0, extB=0;
   for(let i=0;i<6;i++){
-    const need=overlayReserve(b); if(need<=0) break;
-    const y=screenYOf(b[1]); if(y>=need-0.5) break;
-    ext+=(need-y)/screenScale()+0.5;
-    fitCore([b[0],b[1]-ext,b[2],b[3]],padFrac,absPad);
+    const nt=overlayReserve(), nb=bottomReserve(); if(nt<=0&&nb<=0) break;
+    const H=mapEl.getBoundingClientRect().height, s=screenScale();
+    const yt=screenYOf(b[1]), yb=screenYOf(b[3]);
+    const dt=nt>0?nt-yt:0, db=nb>0?yb-(H-nb):0;
+    if(dt<=0.5&&db<=0.5) break;
+    if(dt>0.5) extT+=dt/s+0.5;
+    if(db>0.5) extB+=db/s+0.5;
+    fitCore([b[0],b[1]-extT,b[2],b[3]+extB],padFrac,absPad);
   }
 }
 function fitCore(b,padFrac,absPad){
@@ -385,6 +405,7 @@ function fitCore(b,padFrac,absPad){
   let x0=b[0]-pad,y0=b[1]-pad,x1=b[2]+pad,y1=b[3]+pad;
   let w=x1-x0,h=y1-y0;
   if(w/h>MAP_W/MAP_H){h=w*MAP_H/MAP_W;}else{w=h*MAP_W/MAP_H;}
+  if(w>MAXW){w=MAXW;h=w*MAP_H/MAP_W;}
   vb.x=(x0+x1)/2-w/2; vb.y=(y0+y1)/2-h/2; vb.w=w; vb.h=h;
   clampVB(); applyVB();
 }

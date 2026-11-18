@@ -44,13 +44,29 @@ h1 span{color:var(--accent)}
 
 /* ---------- game layout ---------- */
 #game{flex:1;display:none;flex-direction:column;gap:8px;min-height:0}
-#topbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
-#prompt{flex:1;min-width:190px;background:var(--panel);border:1.5px solid var(--line);border-radius:12px;padding:9px 14px;display:flex;align-items:center;gap:9px;flex-wrap:wrap}
-#prompt .q{font-size:13px;color:var(--ink-dim);white-space:nowrap}
-#prompt .name{font-size:clamp(16px,3vw,21px);font-weight:900;letter-spacing:.05em;color:var(--accent)}
-#prompt .fr{font-size:12px;color:var(--ink-dim);font-style:italic}
+#topbar{display:flex;gap:6px;align-items:stretch}
+#btncol{display:flex;flex-direction:row;gap:6px}
+#btncol button{white-space:nowrap;font-size:clamp(13px,1vw,15px)}
+/* 題目卡：浮在地圖上緣中間 */
+#topstack{position:absolute;top:10px;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:8px;
+  z-index:5;pointer-events:none;width:max-content;max-width:calc(100% - 112px)}
+#prompt{pointer-events:auto;background:var(--panel);border:1.5px solid var(--line);border-radius:16px;
+  padding:clamp(7px,.8vh,12px) clamp(16px,1.6vw,28px);box-shadow:0 4px 18px rgba(30,40,60,.13);
+  display:flex;flex-wrap:wrap;align-items:baseline;justify-content:center;column-gap:clamp(6px,.6vw,10px);row-gap:clamp(2px,.4vh,5px);
+  text-align:center;min-width:170px;max-width:100%}
+#prompt[hidden]{display:none}
+#prompt .brk{flex-basis:100%;height:0}
+#prompt .q{font-size:clamp(12px,.6vw + .5vh,16px);color:var(--ink-dim);font-weight:700;letter-spacing:.1em;white-space:nowrap}
+#prompt .name{font-size:clamp(22px,1.6vw + 1.6vh + 4px,42px);font-weight:900;letter-spacing:.06em;color:var(--accent);line-height:1.15}
+#prompt .fr,#prompt .en,#prompt .ensub{font-size:clamp(12px,.7vw + .5vh,18px);color:var(--ink-dim);font-style:italic;letter-spacing:.02em;font-weight:400}
+#prompt .badge{font-size:clamp(11px,.55vw + .4vh,14px);align-self:center}
+#prompt .ask{font-size:clamp(16px,1vw + 1vh + 2px,28px);font-weight:900;color:var(--ink);letter-spacing:.05em}
+#prompt .sub2{font-size:clamp(11.5px,.6vw + .4vh,15px);color:var(--ink-dim)}
 .badge{font-size:11px;padding:3px 9px;border-radius:999px;font-weight:700;white-space:nowrap;border:1px solid}
-#stats{display:flex;align-items:center;gap:9px;background:var(--panel);border:1.5px solid var(--line);border-radius:12px;padding:9px 13px;font-size:13px;font-weight:700}
+#stats{flex:1;min-width:0;background:var(--panel);border:1.5px solid var(--line);border-radius:12px;padding:8px 14px;display:flex;align-items:center;
+  gap:clamp(10px,1.2vw,22px);font-size:clamp(13px,1vw,16px);font-weight:700;white-space:nowrap;overflow:hidden}
+#stats>span{display:inline-flex;align-items:center}
+#stats .sub2{color:var(--ink-dim);font-weight:400}
 #stats .dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:3px}
 #hintbtn{padding:9px 15px;border-radius:12px;border:1.5px solid #27ae60;background:#eafaf1;color:#1e8449;font-weight:700;font-size:14px;cursor:pointer;font-family:inherit}
 #hintbtn:disabled{opacity:.35;cursor:default}
@@ -121,10 +137,10 @@ svg text{pointer-events:none}
 #regions button{padding:5px 10px;border-radius:999px;border:1px solid var(--line);background:rgba(255,255,255,.94);color:#666;font-size:12px;cursor:pointer;font-family:inherit;font-weight:700;white-space:nowrap;flex:0 0 auto}
 #regions button:hover{color:var(--accent);border-color:var(--accent)}
 
-#toast{position:absolute;top:12px;left:50%;transform:translateX(-50%) translateY(-8px);background:rgba(255,255,255,.97);
+#toast{transform:translateY(-8px);background:rgba(255,255,255,.97);
   border:1.5px solid var(--line);border-radius:999px;padding:8px 20px;font-weight:900;font-size:15px;
-  opacity:0;transition:.25s;pointer-events:none;white-space:nowrap;z-index:5;box-shadow:0 2px 10px rgba(0,0,0,.1)}
-#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+  opacity:0;transition:.25s;pointer-events:none;max-width:100%;text-align:center;z-index:5;box-shadow:0 2px 10px rgba(0,0,0,.1)}
+#toast.show{opacity:1;transform:translateY(0)}
 #toast.ok{color:#1e8449}#toast.no{color:var(--red)}#toast.info{color:var(--blue)}
 
 #choices{display:none;grid-template-columns:1fr 1fr;gap:8px}
@@ -136,7 +152,7 @@ svg text{pointer-events:none}
 #choices button.c-no{border-color:var(--red);background:#fdedec;color:var(--red);opacity:.75}
 #choices button:disabled{cursor:default}
 
-#infocard{position:absolute;left:50%;bottom:52px;transform:translateX(-50%);background:rgba(255,255,255,.97);
+#infocard{pointer-events:none;position:absolute;left:50%;bottom:52px;transform:translateX(-50%);background:rgba(255,255,255,.97);
   border:1.5px solid var(--line);border-radius:12px;padding:11px 20px;text-align:center;display:none;z-index:4;min-width:210px;box-shadow:0 3px 14px rgba(0,0,0,.12)}
 #infocard .name{font-size:18px;font-weight:900;margin-bottom:2px}
 #infocard .fr{font-size:12.5px;color:var(--ink-dim);font-style:italic;margin-bottom:6px}
@@ -162,9 +178,19 @@ svg text{pointer-events:none}
 .btnrow{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
 .ghost{padding:10px 24px;border-radius:999px;border:1.5px solid #bbb;background:transparent;color:var(--ink);font-weight:700;font-size:15px;cursor:pointer;font-family:inherit}
 .ghost:hover{border-color:var(--accent);color:var(--accent)}
+/* 電腦版：答題統計與按鈕浮在地圖左上角 */
+@media (min-width:760px){
+  #game{position:relative}
+  #topbar{position:absolute;top:12px;left:13px;z-index:6;flex-direction:column;align-items:stretch;gap:8px;
+    padding:10px 12px;background:var(--panel);border:1.5px solid var(--line);border-radius:14px;box-shadow:0 4px 18px rgba(30,40,60,.12);max-width:300px}
+  #stats{flex:none;border:none;background:none;padding:0 2px;flex-wrap:wrap;row-gap:5px;column-gap:12px;white-space:normal}
+  #stats>span:first-child,#stats .sub2{flex-basis:100%}
+  #stats>span:first-child{font-size:clamp(15px,.6vw + 7px,20px)}
+  #btncol button{flex:1}
+}
+@media (max-width:759px){ #stats .sub2{display:none} }
 @media (max-width:560px){
   #app{padding:8px}
-  #prompt{padding:8px 12px}
 }
 </style>
 </head>
@@ -204,13 +230,18 @@ svg text{pointer-events:none}
   <!-- game -->
   <div id="game">
     <div id="topbar">
-      <div id="prompt"></div>
       <div id="stats"></div>
-      <button id="hintbtn">💡 提示</button>
-      <button id="quitbtn">✕ 離開</button>
+      <div id="btncol">
+        <button id="hintbtn">💡 提示</button>
+        <button id="quitbtn">✕ 離開</button>
+      </div>
     </div>
     <div id="mapwrap">
       <svg id="map" xmlns="http://www.w3.org/2000/svg"></svg>
+      <div id="topstack">
+        <div id="prompt"></div>
+        <div id="toast"></div>
+      </div>
       <button id="labelbtn">🗺 顯示地名</button>
       <div id="zoomctl">
         <button id="zin">＋</button><button id="zout">－</button><button id="zfit">⛶</button>
@@ -222,7 +253,6 @@ svg text{pointer-events:none}
         <button data-dir="right" style="right:8px;top:50%;transform:translateY(-50%);height:34%;width:30px">▶</button>
       </div>
       <div id="regions"></div>
-      <div id="toast"></div>
       <div id="infocard"></div>
       <div id="legend"></div>
     </div>
@@ -255,7 +285,7 @@ const BOXES={};
 const QC={};
 const DECOR=[];
 /* 特別小的地區：加一圈看不見的觸控範圍（螢幕上約 HALO_PX 像素寬） */
-const HALO=["CN-SH"], HALO_PX=6;
+const HALO=["CN-SH"], HALO_PX=6, HALO_INNER_PX=2.5;
 /* 港澳放大框：src＝原圖取景範圍 [x,y,w,h]，box＝放大框左上角，k＝放大倍率；框內的形狀和原圖同屬一個地區，點哪個都算 */
 const INSET={src:[721.5,723,22.5,16.5], box:[818,704], k:7.6, codes:["CN-GD","HK","MO"], label:["HK","MO"], halo:["MO"], title:"香港・澳門（放大）"};
 const DEPTS=[
@@ -303,7 +333,7 @@ const mbc = o=> QC[o.c] || [(o.mb[0]+o.mb[2])/2,(o.mb[1]+o.mb[3])/2];
 const svgNS="http://www.w3.org/2000/svg";
 const mapEl=document.getElementById("map");
 let vb={x:0,y:0,w:MAP_W,h:MAP_H};
-const MINW=MAP_W/60, MAXW=MAP_W*1.12;
+const MINW=MAP_W/60, MAXW=MAP_W*1.3;
 
 function el(tag,attrs,parent){
   const n=document.createElementNS(svgNS,tag);
@@ -348,6 +378,7 @@ function applyVB(){
   mapEl.setAttribute("viewBox",`${vb.x} ${vb.y} ${vb.w} ${vb.h}`);
   document.getElementById("edgepan").classList.toggle("show", vb.w<MAP_W*0.92);
   updateLabelScale(); updateHalo();
+  placeEdgeUp();
 }
 function updateHalo(){
   const s=screenScale(); if(!isFinite(s)||s<=0) return;
@@ -378,11 +409,73 @@ function zoomAt(cx,cy,factor){
   vb.x=sx-(sx-vb.x)/f; vb.y=sy-(sy-vb.y)/f;
   vb.w=nw; clampVB(); applyVB();
 }
-function fitBBox(b,padFrac){
-  const pad=Math.max(b[2]-b[0],b[3]-b[1])*(padFrac==null?0.25:padFrac)+4;
+/* ---------- 浮在地圖上的元件（題目卡、電腦版左上角面板）不可蓋住地圖 ---------- */
+function hudFloating(){ return getComputedStyle($("topbar")).position==="absolute"; }
+function cardReserve(){
+  const pr=$("prompt"), m=mapEl.getBoundingClientRect();
+  if(!m.height||pr.hidden||!pr.offsetParent) return 0;
+  return pr.getBoundingClientRect().bottom-m.top+8;
+}
+function screenYOf(y){
+  const r=mapEl.getBoundingClientRect(), s=screenScale();
+  return (r.height-vb.h*s)/2+(y-vb.y)*s;
+}
+/* 元件底下有沒有地圖上的陸地或離島框（每 8px 取樣） */
+function coversLand(r){
+  for(let y=r.top+3;y<r.bottom;y+=8) for(let x=r.left+3;x<r.right;x+=8)
+    for(const n of document.elementsFromPoint(x,y)){
+      if(n===mapEl||!mapEl.contains(n)||n.classList.contains("halo-hit")) continue;
+      if(n.closest("[data-c],[data-id]")) return true;
+    }
+  return false;
+}
+function overlayReserve(){
+  const m=mapEl.getBoundingClientRect(); if(!m.height) return 0; let need=0;
+  [$("prompt"), hudFloating()?$("topbar"):null].forEach(el=>{
+    if(!el||el.hidden||!el.offsetParent) return;
+    const r=el.getBoundingClientRect();
+    if(coversLand(r)) need=Math.max(need,r.bottom-m.top+8);
+  });
+  return need;
+}
+/* 底部分區按鈕列蓋到地圖時，地圖要往上讓 */
+function bottomReserve(){
+  const reg=$("regions"), m=mapEl.getBoundingClientRect(); if(!reg||!reg.offsetParent||!m.height) return 0;
+  let r=null;
+  [...reg.children].forEach(c=>{ const q=c.getBoundingClientRect(); if(!q.width) return;
+    r=r?{left:Math.min(r.left,q.left),top:Math.min(r.top,q.top),right:Math.max(r.right,q.right),bottom:Math.max(r.bottom,q.bottom)}:{left:q.left,top:q.top,right:q.right,bottom:q.bottom}; });
+  if(!r||!coversLand(r)) return 0;
+  return m.bottom-r.top+6;
+}
+/* 把 b 放進畫面；若上方元件蓋到地圖，就讓 b 的上緣退到元件下方 */
+function fitBBox(b,padFrac,absPad){
+  fitCore(b,padFrac,absPad);
+  let extT=0, extB=0;
+  for(let i=0;i<6;i++){
+    const nt=overlayReserve(), nb=bottomReserve(); if(nt<=0&&nb<=0) break;
+    const H=mapEl.getBoundingClientRect().height, s=screenScale();
+    const yt=screenYOf(b[1]), yb=screenYOf(b[3]);
+    const dt=nt>0?nt-yt:0, db=nb>0?yb-(H-nb):0;
+    if(dt<=0.5&&db<=0.5) break;
+    if(dt>0.5) extT+=dt/s+0.5;
+    if(db>0.5) extB+=db/s+0.5;
+    fitCore([b[0],b[1]-extT,b[2],b[3]+extB],padFrac,absPad);
+  }
+}
+/* 上方平移鈕放在題目卡下方；電腦版「顯示地名」鈕放在左上角面板下方 */
+function placeEdgeUp(){
+  const up=document.querySelector('#edgepan [data-dir="up"]');
+  if(up){ const r=cardReserve(); up.style.top=(r>0?Math.round(r-2):8)+"px"; }
+  const lb=$("labelbtn"), m=mapEl.getBoundingClientRect();
+  if(lb&&m.height&&hudFloating()) lb.style.top=Math.round($("topbar").getBoundingClientRect().bottom-m.top+8)+"px";
+  else if(lb) lb.style.top="";
+}
+function fitCore(b,padFrac,absPad){
+  const pad=Math.max(b[2]-b[0],b[3]-b[1])*(padFrac==null?0.25:padFrac)+(absPad==null?4:absPad);
   let x0=b[0]-pad,y0=b[1]-pad,x1=b[2]+pad,y1=b[3]+pad;
   let w=x1-x0,h=y1-y0;
   if(w/h>MAP_W/MAP_H){h=w*MAP_H/MAP_W;}else{w=h*MAP_W/MAP_H;}
+  if(w>MAXW){w=MAXW;h=w*MAP_H/MAP_W;}
   vb.x=(x0+x1)/2-w/2; vb.y=(y0+y1)/2-h/2; vb.w=w; vb.h=h;
   clampVB(); applyVB();
 }
@@ -456,11 +549,24 @@ mapEl.addEventListener("pointerup",e=>{
   const wasTap=movedDist<7&&ptrs.size===1;
   endPtr(e);
   if(wasTap&&tgt&&tgt.closest){
-    const grp=tgt.closest("[data-c]");
+    const grp=resolveTap(tgt,e.clientX,e.clientY,"c").closest("[data-c]");
     if(grp) handleDeptTap(grp.dataset.c);
   }
 });
 mapEl.addEventListener("pointercancel",endPtr);
+/* 點到小地區的外擴觸控圈時：底下若是另一個地區的陸地，以底下的為準；只有非常貼近小地區（HALO_INNER_PX）才算小地區 */
+function resolveTap(tgt,cx,cy,attr){
+  if(!tgt.classList||!tgt.classList.contains("halo-hit")) return tgt;
+  const sel=`[data-${attr}]`, hb=tgt.closest(sel);
+  const under=document.elementsFromPoint(cx,cy).find(n=>n!==tgt&&mapEl.contains(n)&&!n.classList.contains("halo-hit")&&n.closest(sel));
+  if(!under||under.closest(sel).dataset[attr]===hb.dataset[attr]) return tgt;
+  const M=tgt.getScreenCTM(), pt=new DOMPoint(cx,cy).matrixTransform(M.inverse()), old=tgt.getAttribute("stroke-width");
+  tgt.setAttribute("stroke-width",(2*HALO_INNER_PX/Math.hypot(M.a,M.b)).toFixed(4));
+  let near=false; try{ near=tgt.isPointInStroke(pt); }catch(_){}
+  tgt.setAttribute("stroke-width",old);
+  return near?tgt:under;
+}
+
 mapEl.addEventListener("wheel",e=>{
   e.preventDefault();
   zoomAt(e.clientX,e.clientY,e.deltaY<0?1.22:1/1.22);
@@ -627,7 +733,8 @@ function startGame(subset){
   $("labelbtn").style.display="none";
   session++; disarmQuit();
   results={}; idx=0;
-  if(mode==="review"){ setupReview(); return; }
+  $("prompt").hidden=false;
+  if(mode==="review"){ setupReview(); fitAll(); return; }
   if(subset){ pool=shuffle(subset.slice()); }
   else{
     pool=shuffle(poolFor(range).slice());
@@ -638,6 +745,8 @@ function startGame(subset){
   $("choices").style.display=mode==="mc"?"grid":"none";
   if(ctxBB&&mode==="click") fitBBox(ctxBB,0.12);
   nextQuestion();
+  /* 題目卡就位後重新取景，讓地圖避開題目卡 */
+  if(mode==="click"){ if(ctxBB) fitBBox(ctxBB,0.12); else fitAll(); }
 }
 $("startBtn").onclick=()=>startGame();
 $("againBtn").onclick=()=>startGame();
@@ -674,9 +783,9 @@ function nextQuestion(){
   const t=pool[idx];
   updateStats();
   if(mode==="click"){
-    $("prompt").innerHTML=`<span class="q">請找出：</span><span class="name">${t.n}</span><span class="fr">${t.f}</span>${badge(t.r)}`;
+    $("prompt").innerHTML=`<span class="q">請找出</span><span class="name">${t.n}</span><span class="brk"></span><span class="fr">${t.f}</span>${badge(t.r)}`;
   }else{
-    $("prompt").innerHTML=`<span class="q">閃爍的地區是？</span>`;
+    $("prompt").innerHTML=`<span class="ask">閃爍的地區是？</span><span class="brk"></span><span class="sub2">從下方選項作答</span>`;
     document.querySelectorAll(".target").forEach(n=>n.classList.remove("target"));
     setDeptClass(t.c,"target");
     const diag=Math.hypot(t.mb[2]-t.mb[0],t.mb[3]-t.mb[1]);
@@ -790,8 +899,8 @@ function setupReview(){
   $("hintbtn").style.display="none";
   $("labelbtn").style.display="block";
   setLabels(true);
-  $("prompt").innerHTML=`<span class="q">點選任一地區查看名稱</span>`;
-  $("stats").innerHTML=`<span>33 個省級行政區</span>`;
+  $("prompt").hidden=true;
+  $("stats").innerHTML=`<span>複習模式・33 個省級行政區</span><span class="sub2">點選任一地區查看名稱</span>`;
   DEPTS.forEach(o=>setDeptClass(o.c,"grp-"+o.r));
   const lg=$("legend");
   lg.innerHTML=`<div class="lg-head">分區圖例（點選聚焦）<span id="lgArrow">▾</span></div><div class="lg-body">`+
