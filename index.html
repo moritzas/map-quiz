@@ -67,6 +67,10 @@ const QUIZZES=[
    ac:"#2e8b57", desc:"全台鄉鎮市區地圖測驗，可依縣市分區練習。"},
   {file:"japan",     flag:"🇯🇵", title:"日本都道府縣",   en:"Prefectures of Japan",
    ac:"#c0392b", desc:"47 個都道府縣，含地圖點選、選擇題與複習模式。"},
+  {file:"korea",     flag:"🇰🇷", title:"韓國廣域行政區", en:"Provinces of South Korea",
+   ac:"#0047a0", desc:"2026 年全南光州合併後的 16 個市道，依首都圈、忠清、湖南、嶺南練習，附韓文名稱。"},
+  {file:"china",     flag:"🇨🇳", title:"中國省級行政區", en:"Provinces of China",
+   ac:"#de2910", desc:"31 個省、自治區、直轄市加上港澳，依七大區練習，附漢語拼音。"},
   {file:"vietnam",   flag:"🇻🇳", title:"越南省級行政區", en:"Provinces of Vietnam",
    ac:"#c8102e", desc:"2025 年併省後的 34 個省與直轄市，依北中南三區練習，附越南文名稱。"},
   {file:"russia",    flag:"🇷🇺", title:"俄羅斯聯邦主體", en:"Federal Subjects of Russia",
@@ -79,8 +83,12 @@ const QUIZZES=[
    ac:"#1a1a1a", desc:"16 個邦的地圖測驗，依北／東／西／南四區練習，附德文名稱。"},
   {file:"switzerland",flag:"🇨🇭", title:"瑞士各州",       en:"Cantons of Switzerland",
    ac:"#d52b1e", desc:"26 個州，依官方 7 大區練習，小州與飛地考驗眼力，附原文名稱。"},
+  {file:"italy",     flag:"🇮🇹", title:"義大利大區",     en:"Regioni d’Italia",
+   ac:"#009246", desc:"20 個大區，依西北、東北、中部、南部與島嶼練習，附義大利文名稱。"},
   {file:"usa",       flag:"🇺🇸", title:"美國五十州",     en:"States of the U.S.A.",
    ac:"#3c3b6e", desc:"50 州地圖測驗，可加選華盛頓特區與 5 海外領地彩蛋關。"},
+  {file:"canada",    flag:"🇨🇦", title:"加拿大省與地區", en:"Provinces & Territories of Canada",
+   ac:"#c8102e", desc:"10 省 3 地區，北極群島與大西洋小省一次認清，附英法文名稱。"},
 ];
 const grid=document.getElementById("grid");
 /* Windows 不支援彩色國旗 emoji,改用 Twemoji SVG;載入失敗時退回原 emoji */
