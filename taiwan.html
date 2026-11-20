@@ -507,7 +507,7 @@ function zoomToBBox(name,frac){
 }
 
 /* ── 地名標籤（複習/結算）：畫在 map-g 內、但反向縮放，避免放大後字爆大 ── */
-const LBL_FS=8,LBL_CAP_PX=15;
+const LBL_FS=8,LBL_CAP_PX=17;   // 螢幕上超過 17px 就不再變大（與其他測驗一致）
 function clearLabels(){
   labelMode=null;labelGroups=[];
   const lg=document.getElementById('review-labels');if(lg)lg.remove();
@@ -540,7 +540,8 @@ function drawLabels(kind){
 }
 function updateLabelScale(){
   if(!labelMode||!labelGroups.length)return;
-  const sBase=$('map').clientWidth/500;
+  /* 地圖以 meet 方式縮放：實際比例取寬、高兩者較小的那個 */
+  const m=$('map'), sBase=Math.min(m.clientWidth/500, m.clientHeight/svgH);
   if(!isFinite(sBase)||sBase<=0)return;
   const q=Math.min(1,LBL_CAP_PX/(LBL_FS*sBase*currentK));
   labelGroups.forEach(L=>L.grp.setAttribute('transform','translate('+L.cx+','+L.cy+') scale('+q+')'));
