@@ -693,7 +693,10 @@ let mode="click", range="all", countSel=0, session=0;
 function later(fn,ms){const s=session;setTimeout(()=>{if(s===session)fn();},ms);}
 let pool=[],idx=0,attempts=0,usedHint=false,results={},locked=false,ctxBB=null;
 
+/* ⭐ 入門：台灣學生比較可能聽過的地區（大城市、名勝、常見地名） */
+const STAR=["GTL", "GTM", "MSY", "WMD", "NYK", "TWR", "CMA", "NTT", "OXF", "CAM", "KEN", "IOW", "BST", "SOM", "DEV", "CON", "EDH", "GLG", "INV", "ABE", "ORK", "SHE", "SGM", "GWN", "BFS", "ANT"];
 function poolFor(rg){
+  if(rg==="star") return DEPTS.filter(o=>STAR.includes(o.c));
   if(rg==="all") return DEPTS.slice();
   if(rg==="ENG") return DEPTS.filter(o=>o.r<=4);
   if(rg==="SCO") return DEPTS.filter(o=>o.r===6||o.r===7);
@@ -714,6 +717,7 @@ function poolFor(rg){
     };
     row.appendChild(b);
   };
+  mk("star","⭐ 入門",STAR.length);
   mk("all","全英國",DEPTS.length);
   mk("ENG","英格蘭",poolFor("ENG").length);
   mk("SCO","蘇格蘭",poolFor("SCO").length);
