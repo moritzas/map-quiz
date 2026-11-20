@@ -375,7 +375,6 @@ function buildMap(svgTarget){
     el("rect",{x:sx,y:sy,width:sw,height:sh,class:"inset-src"},g);
     const right=bx+bw/2>sx+sw/2;
     el("line",{x1:right?sx+sw:sx,y1:sy+sh/2,x2:right?bx:bx+bw,y2:by+bh/2,class:"sep"},g);
-    el("text",{x:bx+1,y:by-3,class:"inset-title"},g).textContent=I.title;
     (I.halo||[]).forEach(c=>{const hg=el("g",{class:"halo","data-c":c},g);
       el("path",{d:byC[c].d,class:"halo-hit","data-k":k,transform:T},el("g",{"clip-path":`url(#${cid})`},hg));});
   });
