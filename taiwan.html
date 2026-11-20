@@ -85,6 +85,13 @@ svg{width:100%;height:auto;display:block;cursor:pointer}
 @keyframes flashBad{0%{fill:#F7A0A0}100%{fill:#ccc9be}}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.45}}
 @media (prefers-reduced-motion: reduce){.dist.target{animation:none}}
+/* 縣市輪廓猜謎 */
+.shape{fill:#6b8db5;stroke:none;transition:fill .2s}
+.shape.ok{fill:#97C459}.shape.no{fill:#F08080}
+#shapeTag{display:none;font-size:14px;font-weight:800;color:#185FA5;white-space:nowrap;padding:9px 4px;letter-spacing:.04em}
+#game.shape #shapeTag{display:block}
+#game.shape #selwrap,#game.shape #btnHint,#game.shape #btnReview{display:none!important}
+#btnShape{width:100%}
 #review-labels text{font-size:8px;fill:#222;pointer-events:none;text-anchor:middle;dominant-baseline:middle}
 
 /* 地圖上的浮動元件 */
@@ -179,12 +186,17 @@ svg{width:100%;height:auto;display:block;cursor:pointer}
       <select id="startSel"><option value="">-- 請選擇縣市，立即開始 --</option></select>
     </div>
     <p class="note">選擇縣市後即開始測驗；遊戲中也可隨時切換</p>
+    <div class="card">
+      <h3>全台挑戰</h3>
+      <button class="opt" id="btnShape">🧩 縣市輪廓<small>看形狀猜縣市・22 題選擇題</small></button>
+    </div>
   </div>
 
   <!-- 遊戲畫面 -->
   <div id="game">
     <div id="gamebar">
       <div id="selwrap"><select id="gameSel"></select><span id="gameSelLabel"></span></div>
+      <span id="shapeTag">🧩 縣市輪廓</span>
       <span class="spacer"></span>
       <div class="btnrow">
         <button class="hbtn" id="btnHint">💡 提示</button>
@@ -275,10 +287,11 @@ let quizFinished=false,inReview=false;
 let pathEls={},centroids={},bboxes={},svgH=500;
 let session=0,currentK=1,autoZoomed=false;
 let labelMode=null,labelGroups=[];
+let shapeMode=false;                    // 縣市輪廓猜謎
 
 function later(fn,ms){const s=session;setTimeout(()=>{if(s===session)fn();},ms);}
 function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
-function quizActive(){return currentCounty&&!quizFinished&&!inReview&&pool.length>0&&idx<pool.length;}
+function quizActive(){return (currentCounty||shapeMode)&&!quizFinished&&!inReview&&pool.length>0&&idx<pool.length;}
 function quizHasProgress(){return quizActive()&&(idx>0||attempts>0||usedHint);}
 
 /* ── toast ── */
@@ -327,6 +340,7 @@ $('gameSel').onchange=e=>{
 
 function selectCounty(name){
   if(!DATA[name])return;
+  shapeMode=false;$('game').classList.remove('shape');
   currentCounty=name;
   $('gameSel').value=name;
   gsLabel();
@@ -360,10 +374,53 @@ const LAKES=[
 {"name":"石門水庫","counties":["桃園市"],"g":{"type":"Polygon","coordinates":[[[121.31457,24.81654],[121.31089,24.81303],[121.31056,24.80893],[121.31285,24.80633],[121.31495,24.80528],[121.31702,24.80495],[121.31932,24.80292],[121.3212,24.80251],[121.32577,24.80467],[121.32979,24.80407],[121.33216,24.80327],[121.33628,24.80018],[121.33947,24.80027],[121.33944,24.79942],[121.33764,24.79847],[121.33527,24.79861],[121.33367,24.79903],[121.33005,24.8027],[121.32742,24.80305],[121.32484,24.80035],[121.32367,24.79973],[121.31941,24.8007],[121.31798,24.80142],[121.31723,24.80223],[121.31499,24.80249],[121.31139,24.80473],[121.30778,24.80572],[121.30594,24.80611],[121.30416,24.80488],[121.30089,24.80501],[121.29621,24.80599],[121.29499,24.80694],[121.29369,24.80953],[121.29222,24.80999],[121.29028,24.81139],[121.28806,24.81251],[121.28663,24.81277],[121.28585,24.81193],[121.28457,24.81132],[121.28118,24.81146],[121.27965,24.81227],[121.27764,24.81433],[121.27633,24.81472],[121.27556,24.81388],[121.27064,24.81357],[121.26838,24.81366],[121.2671,24.81298],[121.26667,24.81171],[121.26806,24.81001],[121.2695,24.80713],[121.26944,24.80548],[121.26806,24.80416],[121.26475,24.80277],[121.26329,24.80307],[121.26114,24.80299],[121.25639,24.80389],[121.25558,24.80386],[121.25162,24.80486],[121.25167,24.80616],[121.25333,24.80871],[121.25201,24.80916],[121.25029,24.80784],[121.24787,24.80726],[121.24625,24.80783],[121.24462,24.80777],[121.24311,24.80613],[121.24068,24.80713],[121.24028,24.80997],[121.24556,24.81027],[121.24701,24.81078],[121.24973,24.81111],[121.2506,24.81196],[121.25398,24.81194],[121.25558,24.81137],[121.25641,24.80886],[121.25851,24.80786],[121.25977,24.8069],[121.26092,24.80635],[121.26207,24.8064],[121.26403,24.80976],[121.26349,24.81183],[121.26277,24.81249],[121.26251,24.81392],[121.26575,24.81582],[121.26904,24.81641],[121.26999,24.81637],[121.27069,24.81674],[121.27419,24.81661],[121.27638,24.81751],[121.27986,24.81805],[121.2835,24.81742],[121.28561,24.81853],[121.28767,24.81888],[121.28915,24.81786],[121.28972,24.81527],[121.29008,24.81459],[121.29144,24.81416],[121.29387,24.81248],[121.29611,24.81138],[121.29789,24.81104],[121.29989,24.81112],[121.30512,24.81405],[121.30605,24.81604],[121.30758,24.8164],[121.31125,24.81642],[121.313,24.81831],[121.31455,24.81931],[121.31535,24.821],[121.31836,24.82148],[121.31916,24.82122],[121.31755,24.81879],[121.31555,24.81751],[121.31457,24.81654]]]}}];
 
 /* ── 建地圖 ── */
-function buildMap(name){
+function countyTopo(name){
   const d=DATA[name];
-  const topo={type:'Topology',transform:d.t,arcs:d.a,objects:{towns:{type:'GeometryCollection',
+  return {type:'Topology',transform:d.t,arcs:d.a,objects:{towns:{type:'GeometryCollection',
     geometries:d.g.map(g=>({type:g.type,arcs:g.arcs,properties:{name:g.properties.n}}))}}};
+}
+/* 縣市外框（鄉鎮合併、去掉放在內嵌框裡的遠方離島），用於輪廓猜謎與全台地圖 */
+function countyOutline(name){
+  const topo=countyTopo(name), drop=new Set(), cut={};
+  (INSETS[name]||[]).forEach(ins=>ins.parts.forEach(sp=>{ if(sp.minLat==null) drop.add(sp.town); else cut[sp.town]=sp.minLat; }));
+  const lat=p=>p[0].reduce((s,c)=>s+c[1],0)/p[0].length;
+  const polys=[];
+  topo.objects.towns.geometries.forEach(g=>{
+    if(drop.has(g.properties.name)) return;
+    const f=topojson.feature(topo,g).geometry; if(!f) return;
+    const ps=f.type==='Polygon'?[f.coordinates]:f.coordinates;
+    const lim=cut[g.properties.name];
+    if(lim!=null && ps.every(p=>lat(p)>=lim)) drop.add(g.properties.name);
+  });
+  const keep=topo.objects.towns.geometries.filter(g=>!drop.has(g.properties.name));
+  const m=topojson.merge(topo,keep);
+  const minLat=Math.min(...Object.values(cut));
+  if(isFinite(minLat)) m.coordinates=m.coordinates.filter(p=>lat(p)<minLat);
+  return {type:'Feature',properties:{name},geometry:m};
+}
+function attachZoom(svgEl,g){
+  const zoom=d3.zoom().scaleExtent([0.5,12]).on('zoom',e=>{
+    g.setAttribute('transform',e.transform.toString());
+    currentK=e.transform.k;
+    updateLabelScale();
+  });
+  d3.select(svgEl).call(zoom);
+  d3.select(svgEl).on('dblclick.zoom',()=>{
+    d3.select(svgEl).transition().duration(400).call(zoom.transform,homeT());
+  });
+  svgEl._zoom=zoom;
+  d3.select(svgEl).call(zoom.transform,d3.zoomIdentity);
+  currentK=1;
+  positionStats();
+  d3.select(svgEl).call(zoom.transform,homeT());
+  $('zoom-controls').style.display='flex';
+}
+function detachZoom(){
+  const s=$('map'); d3.select(s).on('.zoom',null); s._zoom=null; currentK=1;
+  $('zoom-controls').style.display='none';
+}
+function buildMap(name){
+  const topo=countyTopo(name);
   const features=topojson.feature(topo,topo.objects.towns).features;
   const insetGroups=[];
   (INSETS[name]||[]).forEach(ins=>{
@@ -429,22 +486,7 @@ function buildMap(name){
     g.appendChild(el);
   });
 
-  const zoom=d3.zoom().scaleExtent([0.5,12]).on('zoom',e=>{
-    g.setAttribute('transform',e.transform.toString());
-    currentK=e.transform.k;
-    updateLabelScale();
-  });
-  d3.select(svgEl).call(zoom);
-  d3.select(svgEl).on('dblclick.zoom',()=>{
-    d3.select(svgEl).transition().duration(400).call(zoom.transform,homeT());
-  });
-  svgEl._zoom=zoom;
-  d3.select(svgEl).call(zoom.transform,d3.zoomIdentity);
-  currentK=1;
-
-  positionStats();
-  d3.select(svgEl).call(zoom.transform,homeT());
-  $('zoom-controls').style.display='flex';
+  attachZoom(svgEl,g);
 }
 
 /* 統計小卡固定在左下角（上緣中間是題目卡、右下是縮放鈕） */
@@ -616,7 +658,7 @@ function flash(name,cls){
 }
 
 function handleClick(name){
-  if(inReview){reviewPeek(name);return;}
+  if(inReview||(shapeMode&&quizFinished)){reviewPeek(name);return;}
   if(quizMode()!=='click'||locked||!quizActive())return;
   const t=pool[idx];
   if(name===t){
@@ -709,6 +751,7 @@ function updateStats(){
 
 /* ── 結算 ── */
 function endGame(){
+  if(shapeMode){endShape();return;}
   quizFinished=true;locked=true;
   $('game').classList.remove('mc');
   $('map-stats').style.display='none';
@@ -732,7 +775,8 @@ function endGame(){
   $('btnRetry').style.display=wrong.length?'':'none';
   $('btnRetry').onclick=()=>startQuiz(wrong);
   const nx=nextCounty();
-  $('btnNext').textContent='下一個縣市：'+nx+' →';
+  $('btnNext').style.display='';
+  $('btnNext').textContent='隨機下一個：'+nx+' →';
   $('btnNext').onclick=()=>selectCounty(nx);
   /* 結果地圖：三色 + 未考的變淡 + 上色標籤 */
   Object.entries(pathEls).forEach(([n,el])=>{
@@ -745,15 +789,125 @@ function endGame(){
   $('result-panel').style.display='block';
   window.scrollTo({top:0,behavior:'smooth'});
 }
-$('btnAgain').onclick=()=>startQuiz();
+$('btnAgain').onclick=()=>shapeMode?startShape():startQuiz();
+/* ── 🧩 縣市輪廓猜謎：只給縣市外形（北方朝上、放大到同樣大小），四選一 ── */
+const ALL_COUNTIES=COUNTY_ORDER.filter(n=>DATA[n]);
+const regionOf=n=>(REGION_GROUPS.find(([,ns])=>ns.includes(n))||[''])[0];
+$('btnShape').onclick=()=>startShape();
+function startShape(subset){
+  session++;shapeMode=true;currentCounty=null;inReview=false;quizFinished=false;
+  disarmQuit();setReviewBtn('idle');clearLabels();
+  $('start').style.display='none';$('game').style.display='block';
+  $('game').classList.add('shape','mc');
+  $('result-panel').style.display='none';
+  $('map-stats').style.display='flex';positionStats();
+  $('prompt').hidden=false;$('prompt').classList.add('mc');
+  $('prompt-label').textContent='這是哪個縣市？';$('target').textContent='';
+  $('choices').style.display='grid';
+  pool=shuffle((subset||ALL_COUNTIES).slice());idx=0;districtStatus={};
+  detachZoom();
+  nextShapeQ();
+}
+function drawShape(name){
+  const svgEl=$('map'); svgEl.setAttribute('viewBox','0 0 500 500'); svgEl.innerHTML=''; svgH=500;
+  const f=countyOutline(name);
+  const pg=d3.geoPath().projection(d3.geoMercator().fitExtent([[40,70],[460,480]],f));
+  const g=document.createElementNS('http://www.w3.org/2000/svg','g'); g.id='map-g'; svgEl.appendChild(g);
+  const p=document.createElementNS('http://www.w3.org/2000/svg','path');
+  p.setAttribute('class','shape'); p.setAttribute('d',pg(f)); g.appendChild(p);
+  pathEls={};centroids={};bboxes={};
+  return p;
+}
+function nextShapeQ(){
+  if(idx>=pool.length){endGame();return;}
+  attempts=0;locked=false;
+  const t=pool[idx], sp=drawShape(t);
+  /* 干擾選項：同區域優先 2 個，其餘隨機 */
+  const same=shuffle(ALL_COUNTIES.filter(n=>n!==t&&regionOf(n)===regionOf(t))).slice(0,2);
+  const rest=shuffle(ALL_COUNTIES.filter(n=>n!==t&&!same.includes(n))).slice(0,3-same.length);
+  const opts=shuffle([t,...same,...rest]);
+  const box=$('choices');box.innerHTML='';
+  opts.forEach(o=>{
+    const b=document.createElement('button'); b.textContent=o;
+    b.onclick=()=>{
+      if(locked||!quizActive())return;
+      if(o===t){
+        locked=true;b.classList.add('c-ok');sp.classList.add('ok');
+        districtStatus[t]=attempts===0?'g':attempts===1?'y':'r';
+        toast('✓ '+t,'ok');idx++;updateStats();later(nextShapeQ,900);
+      }else{
+        attempts++;b.classList.add('c-no');b.disabled=true;
+        if(attempts>=3){
+          locked=true;districtStatus[t]='r';sp.classList.add('no');
+          [...box.children].forEach(x=>{if(x.textContent===t)x.classList.add('c-ok');});
+          toast('正確答案：「'+t+'」','no',1500);idx++;updateStats();later(nextShapeQ,1600);
+        }else toast('再試一次！','no');
+      }
+    };
+    box.appendChild(b);
+  });
+  updateStats();
+}
+/* 結算：全台縣市地圖，依答題結果上色 */
+function buildTaiwanMap(){
+  const feats=ALL_COUNTIES.map(n=>countyOutline(n));
+  const fc={type:'FeatureCollection',features:feats};
+  const pg0=d3.geoPath().projection(d3.geoMercator().fitSize([500,500],fc));
+  const b0=pg0.bounds(fc);
+  svgH=Math.max(180,Math.min(Math.round(b0[1][1]-b0[0][1]+40),560));
+  const svgEl=$('map'); svgEl.setAttribute('viewBox','0 0 500 '+svgH); svgEl.innerHTML='';
+  const pg=d3.geoPath().projection(d3.geoMercator().fitSize([500,svgH],fc));
+  const g=document.createElementNS('http://www.w3.org/2000/svg','g'); g.id='map-g'; svgEl.appendChild(g);
+  pathEls={};centroids={};bboxes={};labelGroups=[];labelMode=null;
+  feats.forEach(f=>{
+    const n=f.properties.name, el=document.createElementNS('http://www.w3.org/2000/svg','path');
+    el.setAttribute('class','dist'); el.setAttribute('d',pg(f));
+    el.addEventListener('click',()=>handleClick(n));
+    g.appendChild(el); pathEls[n]=el;
+    const c=pg.centroid(f); if(c&&!isNaN(c[0])) centroids[n]=c;
+    const b=pg.bounds(f); bboxes[n]=[b[0][0],b[0][1],b[1][0],b[1][1]];
+  });
+  /* 嘉義市、新竹市在縣的洞裡：最後再畫一次確保在上層 */
+  ['嘉義市','新竹市'].forEach(n=>{ if(pathEls[n]) g.appendChild(pathEls[n]); });
+  attachZoom(svgEl,g);
+}
+function endShape(){
+  quizFinished=true;locked=true;
+  $('game').classList.remove('mc');
+  $('map-stats').style.display='none';
+  $('choices').style.display='none';
+  $('prompt-label').textContent='測驗結束';$('target').textContent='';
+  const v=pool.map(n=>districtStatus[n]);
+  const g=v.filter(s=>s==='g').length,y=v.filter(s=>s==='y').length,r=v.filter(s=>s==='r').length;
+  const pct=pool.length?Math.round((g+y*0.5)/pool.length*100):0;
+  $('res-title').textContent='縣市輪廓・'+pool.length+' 題完成';
+  $('big-acc').textContent=pct+' 分';
+  $('res-detail').innerHTML=
+    '<span style="color:#1e8449">一次答對 '+g+'</span>'+
+    '<span style="color:#b8860b">兩次內 '+y+'</span>'+
+    '<span style="color:#c0392b">未答對 '+r+'</span>';
+  const wrong=pool.filter(n=>districtStatus[n]!=='g');
+  $('res-mistakes').innerHTML=wrong.length?'需要複習：'+wrong.map(n=>'<b>'+n+'</b>').join('、'):'全部一次答對，太厲害了！🎉';
+  $('btnRetry').style.display=wrong.length?'':'none';
+  $('btnRetry').onclick=()=>startShape(wrong);
+  $('btnNext').style.display='none';
+  buildTaiwanMap();
+  Object.entries(pathEls).forEach(([n,el])=>{
+    el.setAttribute('class','dist');
+    if(pool.includes(n))el.classList.add('result-'+(districtStatus[n]||'r'));
+    else el.classList.add('review-dim');
+  });
+  drawLabels('result');
+  zoomReset();
+  $('result-panel').style.display='block';
+  window.scrollTo({top:0,behavior:'smooth'});
+}
 
+
+/* 結算後的「下一個縣市」：隨機挑一個（不重複目前這個） */
 function nextCounty(){
-  const i=COUNTY_ORDER.indexOf(currentCounty);
-  for(let j=1;j<=COUNTY_ORDER.length;j++){
-    const n=COUNTY_ORDER[(i+j)%COUNTY_ORDER.length];
-    if(DATA[n])return n;
-  }
-  return currentCounty;
+  const c=COUNTY_ORDER.filter(n=>DATA[n]&&n!==currentCounty);
+  return c.length?c[Math.floor(Math.random()*c.length)]:currentCounty;
 }
 
 /* ── 複習模式（地圖右上角切換） ── */
@@ -810,6 +964,7 @@ $('btnQuit').onclick=()=>{
 function goHome(){
   session++;disarmQuit();
   currentCounty=null;inReview=false;quizFinished=false;pool=[];
+  shapeMode=false;$('game').classList.remove('shape','mc');
   $('game').style.display='none';
   $('start').style.display='flex';
   $('startSel').value='';$('gameSel').value='';gsLabel();
